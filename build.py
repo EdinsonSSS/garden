@@ -410,7 +410,7 @@ def build_map():
                 parts.append('</g></a>')
 
     svg = (f'<svg viewBox="0 0 {W} 734" xmlns="http://www.w3.org/2000/svg" role="img" '
-           f'aria-label="Интерактивная карта сада: растения рядами, всего 26">' + "".join(parts) + '</svg>')
+           f'aria-label="Интерактивная карта сада: все растения, всего 26">' + "".join(parts) + '</svg>')
     return svg
 
 # ------------------------------------------------------------------ index
