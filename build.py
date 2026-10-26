@@ -2,15 +2,48 @@
 """Генератор сайта «Мой сад» — интерактивная карта + карточки растений."""
 import html
 import os
-import base64
 import json
-import shutil
 from plants_data import PLANTS, ORDER, MAP_ROWS
 
 OUT = os.path.dirname(os.path.abspath(__file__))
+
+
+def validate(plants, order, map_rows):
+    """Проверка целостности данных перед сборкой; при ошибках — SystemExit."""
+    errs = []
+    ids = [p["id"] for p in plants]
+    if len(ids) != len(set(ids)):
+        errs.append("дублирующиеся id растений")
+    known = set(ids)
+    if sorted(order) != sorted(ids):
+        errs.append(f"ORDER не совпадает со списком id (ORDER: {len(order)}, PLANTS: {len(ids)})")
+    for p in plants:
+        for key in ("name", "species", "kind", "row_label", "tagline", "emoji",
+                    "count", "facts", "chars", "planting", "care", "pruning",
+                    "pests", "harvest", "tips", "sources", "garden_note"):
+            if key not in p:
+                errs.append(f"{p.get('id','?')}: нет поля '{key}'")
+    used = set()
+    for rname, items in map_rows:
+        for it in items:
+            pid = it["plant"]
+            if pid not in known:
+                errs.append(f"MAP_ROWS ({rname}): растение '{pid}' отсутствует в PLANTS")
+            else:
+                used.add(pid)
+    missing = known - used
+    if missing:
+        errs.append(f"не размещены на карте: {', '.join(sorted(missing))}")
+    if errs:
+        raise SystemExit("Ошибка в данных:\n  - " + "\n  - ".join(errs))
+
+
+validate(PLANTS, ORDER, MAP_ROWS)
+
 P = {p["id"]: p for p in PLANTS}
 ORDERED = [P[i] for i in ORDER]
-PHOTOS = json.load(open(os.path.join(OUT, "photos.json"), encoding="utf-8"))
+with open(os.path.join(OUT, "photos.json"), encoding="utf-8") as f:
+    PHOTOS = json.load(f)
 
 KINDS = {
     "apple":    dict(name="Яблони",         color="#5b9a3e", fruit="#d64545", shape="tree"),
@@ -73,6 +106,8 @@ section{margin:44px 0}
 .map-toolbar .hint{margin-left:auto;color:var(--muted);font-size:13.5px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink);transition:.15s}
 .chip:hover{border-color:var(--green)}
+.chip:focus-visible,.tree-link:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tree-link:focus-visible circle:first-child{stroke-width:3;stroke-opacity:1}
 .chip.on{background:var(--green);border-color:var(--green);color:#fff}
 .chip i{width:11px;height:11px;border-radius:50%;display:inline-block}
 .map-wrap{position:relative;border-radius:12px;overflow:hidden;background:#eef2e0;border:1px solid #dfe6cc}
@@ -177,39 +212,64 @@ footer .fin{display:flex;gap:30px;flex-wrap:wrap;margin-top:14px;opacity:.85}
 
 JS = """
 (function(){
+  'use strict';
   var wrap=document.querySelector('.map-wrap');
-  if(!wrap)return;
   var tip=document.getElementById('maptip');
-  var trees=wrap.querySelectorAll('.tree');
+  var trees=wrap?Array.prototype.slice.call(wrap.querySelectorAll('.tree')):[];
   function show(ev,g){
-    tip.innerHTML=g.getAttribute('data-tip');
+    if(!tip)return;
+    tip.innerHTML=g.getAttribute('data-tip')||'';
     tip.style.opacity='1';
     move(ev);
   }
   function move(ev){
+    if(!tip)return;
     var r=wrap.getBoundingClientRect();
     var x=ev.clientX-r.left+16, y=ev.clientY-r.top+14;
     if(x+tip.offsetWidth>r.width-8)x=ev.clientX-r.left-tip.offsetWidth-14;
     if(y+tip.offsetHeight>r.height-8)y=Math.max(6,ev.clientY-r.top-tip.offsetHeight-12);
     tip.style.left=x+'px';tip.style.top=y+'px';
   }
-  function hide(){tip.style.opacity='0';}
+  function hide(){if(tip)tip.style.opacity='0';}
   trees.forEach(function(g){
     g.addEventListener('mouseenter',function(ev){show(ev,g);});
     g.addEventListener('mousemove',move);
     g.addEventListener('mouseleave',hide);
+    // доступность с клавиатуры: подсказка при фокусе ссылки на дереве
+    var link=g.closest?g.closest('a'):null;
+    if(link){
+      link.setAttribute('tabindex','0');
+      link.addEventListener('focus',function(){
+        if(!tip)return;
+        tip.innerHTML=g.getAttribute('data-tip')||'';
+        tip.style.opacity='1';
+        var lr=link.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
+        tip.style.left=Math.max(6,lr.left-wr.left)+'px';
+        tip.style.top=Math.max(6,lr.bottom-wr.top+6)+'px';
+      });
+      link.addEventListener('blur',hide);
+    }
   });
-  var chips=document.querySelectorAll('.chip[data-kind]');
+  var chips=Array.prototype.slice.call(document.querySelectorAll('.chip[data-kind]'));
   var active=null;
+  function apply(){
+    chips.forEach(function(cc){
+      var kk=cc.getAttribute('data-kind');
+      var on=(active===null)?(kk===''):(kk===active);
+      cc.classList.toggle('on',on);
+      cc.setAttribute('aria-pressed',on?'true':'false');
+    });
+    trees.forEach(function(g){
+      if(!active)g.classList.remove('dim');
+      else g.classList.toggle('dim',g.getAttribute('data-kind')!==active);
+    });
+  }
   chips.forEach(function(c){
+    c.setAttribute('aria-pressed',c.classList.contains('on')?'true':'false');
     c.addEventListener('click',function(){
       var k=c.getAttribute('data-kind');
-      if(active===k){active=null;}else{active=k;}
-      chips.forEach(function(cc){cc.classList.toggle('on', active===null ? cc.getAttribute('data-kind')==='' : cc.getAttribute('data-kind')===active);});
-      trees.forEach(function(g){
-        if(!active)g.classList.remove('dim');
-        else g.classList.toggle('dim',g.getAttribute('data-kind')!==active);
-      });
+      active=(active===k)?null:k;
+      apply();
     });
   });
 })();
@@ -219,7 +279,7 @@ FAVICON = ("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20vie
            "%3Ctext%20y='0.9em'%20font-size='90'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E")
 
 # ------------------------------------------------------------------ helpers
-def page(title, body, extra_head=""):
+def page(title, body, root=""):
     return f"""<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -228,12 +288,11 @@ def page(title, body, extra_head=""):
 <title>{e(title)}</title>
 <meta name="description" content="Мой сад — учёт деревьев и кустарников, интерактивная карта, характеристики, посадка, уход и тонкости выращивания.">
 <link rel="icon" href="{FAVICON}">
-<style>{CSS}</style>
-{extra_head}
+<link rel="stylesheet" href="{root}style.css">
 </head>
 <body>
 {body}
-<script>{JS}</script>
+<script src="{root}app.js"></script>
 </body>
 </html>"""
 
@@ -298,6 +357,11 @@ def tip_html(p, extra=""):
     return ('<b>' + e(p['name']) + '</b><span style="opacity:.75">' + e(p['species']) + '</span><br>'
             + rows + e(extra) + '<span class="go">клик — открыть карточку →</span>')
 
+
+def tip_attr(p, extra=""):
+    """tip_html с двойным экранированием кавычек — значение атрибута data-tip."""
+    return e(tip_html(p, extra)).replace('"', "&quot;")
+
 def build_map():
     W, BAND_X0, BAND_X1 = 1080, 96, 1056
     parts = []
@@ -329,7 +393,7 @@ def build_map():
                 p = P[it["plant"]]
                 k = KINDS[it["color_key"]]
                 gx0 = BAND_X0 + 14 + gi * (gw + GGAP)
-                parts.append(f'<a href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{it["color_key"]}" data-tip=\'{tip_html(p, p["row_label"] + " · 5 деревьев · ")}\'>')
+                parts.append(f'<a class="tree-link" href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{it["color_key"]}" data-tip="{tip_attr(p, p["row_label"] + " · 5 деревьев · ")}">')
                 parts.append(f'<rect x="{gx0:.0f}" y="{y+8}" width="{gw:.0f}" height="{h-46}" rx="12" fill="{k["color"]}" fill-opacity="0.07" stroke="{k["color"]}" stroke-opacity="0.3" stroke-dasharray="4 3"/>')
                 for ti in range(5):
                     cx = gx0 + GPAD + GSTEP * (ti + 0.5)
@@ -344,7 +408,7 @@ def build_map():
                 cy = y + 36
                 s = it.get("scale", 1.0)
                 k = KINDS[p["kind"]]
-                parts.append(f'<a href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{p["kind"]}" data-tip=\'{tip_html(p, p["row_label"])}\'>')
+                parts.append(f'<a class="tree-link" href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{p["kind"]}" data-tip="{tip_attr(p, p["row_label"])}">')
                 parts.append(f'<g class="zoom">{glyph(cx, cy, s, p["kind"], unknown=(p["kind"]=="unknown"))}</g>')
                 l2 = p["name"] if len(p["name"]) < 18 else p["name"]
                 parts.append(label(cx, y + h - 24, k["name"], l2, k["color"]))
@@ -361,7 +425,7 @@ def build_index():
     n_trees = sum(x["count"] for x in PLANTS)
     legend_kinds = ["apple", "pear", "cherry", "plum", "wildplum", "haw", "hazel", "oak", "unknown"]
     chips = "".join(
-        f'<button class="chip" data-kind="{k}"><i style="background:{KINDS[k]["color"]}"></i>{e(KINDS[k]["name"])}</button>'
+        f'<button class="chip" type="button" aria-pressed="false" data-kind="{k}"><i style="background:{KINDS[k]["color"]}"></i>{e(KINDS[k]["name"])}</button>'
         for k in legend_kinds)
 
     # каталог по группам
@@ -400,7 +464,7 @@ def build_index():
 <div class="sec-head"><h2>🗺 Карта сада</h2><span>наведите на дерево — краткая справка, клик — карточка; кнопки ниже фильтруют по видам</span></div>
 <div class="card map-card">
 <div class="map-toolbar">
-<button class="chip on" data-kind="">Все растения</button>
+<button class="chip on" type="button" aria-pressed="true" data-kind="">Все растения</button>
 {chips}
 <span class="hint">Ряд 1 — вдоль забора</span>
 </div>
@@ -463,9 +527,8 @@ def gallery_html(pid):
         tp = os.path.join(OUT, "img", pid, f"thumb-{it['n']}.jpg")
         if not os.path.exists(tp):
             continue
-        b64 = base64.b64encode(open(tp, "rb").read()).decode()
         figs += (f'<figure><a href="../img/{pid}/full-{it["n"]}.jpg" target="_blank" rel="noopener" title="Открыть в полном размере">'
-                 f'<img src="data:image/jpeg;base64,{b64}" alt="{e(it["cap"])}"></a>'
+                 f'<img src="../img/{pid}/thumb-{it["n"]}.jpg" alt="{e(it["cap"])}" loading="lazy" width="320" height="150"></a>'
                  f'<figcaption>{e(it["cap"])}<br><span style="opacity:.75">фото: {e(it["src"])}</span></figcaption></figure>')
     return (f'<div class="psec" id="photos"><h2><span class="ic">📷</span>Фотографии</h2>'
             f'<div class="gallery">{figs}</div>'
@@ -553,11 +616,16 @@ def build_plant(p, idx):
 </div>
 </div>
 {footer()}"""
-    return page(f"{p['name']} — {p['species']} | Мой сад", body)
+    return page(f"{p['name']} — {p['species']} | Мой сад", body, root="../")
 
 # ------------------------------------------------------------------ build
 def main():
     os.makedirs(os.path.join(OUT, "plants"), exist_ok=True)
+    # общие статические файлы — один раз вместо инлайна в каждой из 18 страниц
+    with open(os.path.join(OUT, "style.css"), "w", encoding="utf-8") as f:
+        f.write(CSS.strip() + "\n")
+    with open(os.path.join(OUT, "app.js"), "w", encoding="utf-8") as f:
+        f.write(JS.strip() + "\n")
     with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as f:
         f.write(build_index())
     for i, p in enumerate(ORDERED):
@@ -569,15 +637,25 @@ def main():
         f.write("""# Мой сад — сайт учёта растений
 
 - `index.html` — главная: интерактивная карта сада (SVG), каталог, календарь работ.
-- `plants/*.html` — карточки растений (17 шт.): характеристики, посадка, уход, обрезка,
+- `plants/*.html` — карточки растений: характеристики, посадка, уход, обрезка,
   защита, тонкости из отзывов садоводов, источники.
+- `style.css`, `app.js` — общие стили и скрипты (генерируются, править через `build.py`).
 - `plants_data.py` — данные растений (можно править: сорта, тексты, раскладка карты в MAP_ROWS).
 - `build.py` — генератор: после правки данных выполните `python3 build.py`.
+  Сборка начинается с проверки целостности данных (id, поля, раскладка карты);
+  при ошибках сайт не пересобирается.
 
 Откройте `index.html` в браузере. Клик по дереву на карте ведёт в его карточку,
-кнопки-фильтры подсвечивают выбранный вид.
+кнопки-фильтры подсвечивают выбранный вид. Деревья на карте и кнопки доступны
+с клавиатуры (Tab — обводка и подсказка, Enter — переход).
+
+## Фотографии
+- В каждую карточку встроена галерея (миниатюры — `img/<id>/thumb-N.jpg`, грузятся лениво;
+  клик по фото открывает полноразмерную версию из `img/<id>/full-N.jpg`).
+- Подписи и источники фото — в `photos.json`; там же можно заменить номер/подпись кадра.
+- После правок `photos.json` выполните `python3 build.py`.
 """)
-    print("Сгенерировано:", 1 + len(ORDERED), "страниц")
+    print("Сгенерировано:", 1 + len(ORDERED), "страниц + style.css + app.js")
 
 if __name__ == "__main__":
     main()
