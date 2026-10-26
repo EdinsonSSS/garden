@@ -1,5 +1,5 @@
 {
-  "dependencies": {
-    "surge": "^0.51.0"
+  "scripts": {
+    "build": "python3 build.py"
   }
 }
