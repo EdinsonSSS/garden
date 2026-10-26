@@ -1,0 +1,108 @@
+{
+  "vishnya": [
+    {"n": 1, "cap": "Цветение вишнёвого сада весной", "src": "vhoz.ru"},
+    {"n": 2, "cap": "Спелые ягоды на ветке", "src": "drevesina-master.ru"},
+    {"n": 6, "cap": "Урожай в ладонях", "src": "poryadok.ru"},
+    {"n": 7, "cap": "Сбор ягод прямо с дерева", "src": "poryadok.ru"},
+    {"n": 8, "cap": "Корзинка с урожаем", "src": "poryadok.ru"}
+  ],
+  "sliva": [
+    {"n": 1, "cap": "Плоды на ветке", "src": "masterasada.ru"},
+    {"n": 2, "cap": "Сливы в период созревания", "src": "sad-i-ogorod.ru"},
+    {"n": 4, "cap": "Сортовые плоды с восковым налётом", "src": "botanichka.ru"},
+    {"n": 5, "cap": "Разнообразие окраски плодов", "src": "martin-sad.ru"}
+  ],
+  "boyaryshnik": [
+    {"n": 1, "cap": "Плодоносящая ветвь", "src": "wikimedia.org"},
+    {"n": 2, "cap": "Куст в пору обильного плодоношения", "src": "kedr812.ru"},
+    {"n": 4, "cap": "Плоды боярышника", "src": "pitomnik1.ru"},
+    {"n": 5, "cap": "Соплодия крупным планом", "src": "rosselhozpitomnik.ru"}
+  ],
+  "antonovka": [
+    {"n": 1, "cap": "Урожай Антоновки", "src": "uralsad74.ru"},
+    {"n": 2, "cap": "Плоды с фирменной «оржавленностью» у чашечки", "src": "vhoz.ru"},
+    {"n": 3, "cap": "Яблоки на ветке", "src": "plodopitomnik-sad.by"},
+    {"n": 5, "cap": "Плоды в период хранения", "src": "plodopitomnik-sad.kz"}
+  ],
+  "orezhnik": [
+    {"n": 1, "cap": "Орехи в плюске крупным планом", "src": "botanichka.ru"},
+    {"n": 2, "cap": "Габитус куста", "src": "pitomnik-zr.ru"},
+    {"n": 4, "cap": "Плодоносящая ветвь", "src": "botanichka.ru"},
+    {"n": 5, "cap": "Молодые орехи", "src": "pitomnik-zr.ru"}
+  ],
+  "bryanskoe": [
+    {"n": 1, "cap": "Плоды на дереве", "src": "rastisad.ru"},
+    {"n": 3, "cap": "Созревающие яблоки", "src": "rastisad.ru"},
+    {"n": 4, "cap": "Плодовая ветвь", "src": "ferma.expert"},
+    {"n": 5, "cap": "Сортовое фото с этикеткой", "src": "vniispk.ru"}
+  ],
+  "uslada": [
+    {"n": 1, "cap": "Плоды и разрез: розоватая мякоть — визитка сорта", "src": "ferma.expert"},
+    {"n": 3, "cap": "Сбор урожая", "src": "ferma.expert"},
+    {"n": 4, "cap": "Созревающие плоды", "src": "ferma.expert"},
+    {"n": 5, "cap": "Яблоки с карминовым румянцем", "src": "stpulscen.ru"}
+  ],
+  "moskovskoe-zimnee": [
+    {"n": 1, "cap": "Плоды с красным полосатым румянцем", "src": "rastisad.ru"},
+    {"n": 3, "cap": "Урожай, снятый на хранение", "src": "rastisad.ru"},
+    {"n": 4, "cap": "Яблоки в период созревания", "src": "luchshii-sad.ru"},
+    {"n": 5, "cap": "Плод крупным планом", "src": "rastisad.ru"}
+  ],
+  "narodnoe": [
+    {"n": 1, "cap": "Яблоки на ветке", "src": "rastisad.ru"},
+    {"n": 2, "cap": "Сортовая карточка с разрезом", "src": "vniispk.ru"},
+    {"n": 3, "cap": "Золотистые плоды сорта", "src": "rastisad.ru"},
+    {"n": 4, "cap": "Плодоносящее дерево", "src": "ogorodum.ru"},
+    {"n": 5, "cap": "Плод крупным планом", "src": "ferma.expert"}
+  ],
+  "dub": [
+    {"n": 1, "cap": "Молодой дуб на открытым месте", "src": "pitomnik-zr.ru"},
+    {"n": 2, "cap": "Дуб черешчатый: ботаническая иллюстрация", "src": "tursar.ru"},
+    {"n": 4, "cap": "Крона взрослого дерева", "src": "dachadacha.com"},
+    {"n": 5, "cap": "Осенняя окраска листвы", "src": "drevo-spas.ru"}
+  ],
+  "pamyat-zhegalova": [
+    {"n": 1, "cap": "Собранные плоды", "src": "rastisad.ru"},
+    {"n": 2, "cap": "Плоды на дереве", "src": "vniispk.ru"},
+    {"n": 3, "cap": "Груши с лёгким румянцем", "src": "astrussia.com"},
+    {"n": 4, "cap": "Созревающие груши", "src": "царьсад.рф"}
+  ],
+  "severny-sinap": [
+    {"n": 1, "cap": "Плоды на ветке", "src": "sad-i-ogorod.ru"},
+    {"n": 2, "cap": "Плоды сорта с подписью", "src": "garden-ufa.ru"},
+    {"n": 3, "cap": "Урожай", "src": "yafo-goods.ru"},
+    {"n": 4, "cap": "Яблоки перед съёмом", "src": "greensad36.ru"}
+  ],
+  "medunica": [
+    {"n": 1, "cap": "Карточка сорта", "src": "russad39.ru"},
+    {"n": 2, "cap": "Полосатые плоды на дереве", "src": "zberri.com"},
+    {"n": 3, "cap": "Урожай Медуницы", "src": "kp.ru"},
+    {"n": 4, "cap": "Плодовая кисть", "src": "sadoviy.by"}
+  ],
+  "tyorn": [
+    {"n": 1, "cap": "Тёрн в пору плодоношения", "src": "romashkino.ru"},
+    {"n": 2, "cap": "Плодоносящая ветвь", "src": "solinepro.ru"},
+    {"n": 3, "cap": "Гроздья плодов", "src": "lesosad.org"},
+    {"n": 4, "cap": "Плоды крупным планом", "src": "picturethisai.com"},
+    {"n": 5, "cap": "Ботаническая иллюстрация Prunus spinosa", "src": "wikimedia.org"}
+  ],
+  "kafedralnaya": [
+    {"n": 1, "cap": "Карточка сорта", "src": "russad39.ru"},
+    {"n": 2, "cap": "Обильное плодоношение", "src": "a-dubrava.ru"},
+    {"n": 3, "cap": "Плоды с характерной бугристостью", "src": "zpitomnik.ru"},
+    {"n": 4, "cap": "Созревающие груши", "src": "orinina.ru"}
+  ],
+  "konfetnoe": [
+    {"n": 2, "cap": "Урожай Конфетного", "src": "zpitomnik.ru"},
+    {"n": 3, "cap": "Карточка сорта", "src": "russad39.ru"},
+    {"n": 4, "cap": "Полосатый румянец крупным планом", "src": "zpitomnik.ru"},
+    {"n": 5, "cap": "Плоды на ветке", "src": "pitomnik1.ru"}
+  ],
+  "neizvestnaya-yablonya": [
+    {"n": 1, "cap": "Наблюдаем плоды: срок, окраска, вкус", "src": "botanichka.ru"},
+    {"n": 2, "cap": "Схема разреза: что измерять в «досье»", "src": "divnyi-sad.ru"},
+    {"n": 6, "cap": "Разрез: семенная камера и семена", "src": "dreamstime.com"},
+    {"n": 10, "cap": "Прививка: способ дать дереву новый сорт", "src": "ferma.expert"},
+    {"n": 11, "cap": "Инструмент и черенки для прививки", "src": "usadba-shop.ru"}
+  ]
+}
