@@ -39,7 +39,6 @@ section{margin:44px 0}
 /* ---------- map ---------- */
 .map-card{padding:18px}
 .map-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.map-toolbar .hint{margin-left:auto;color:var(--muted);font-size:13.5px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink);transition:.15s}
 .chip:hover{border-color:var(--green)}
 .chip:focus-visible,.tree-link:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -137,7 +136,6 @@ footer .fin{display:flex;gap:30px;flex-wrap:wrap;margin-top:14px;opacity:.85}
 @media(max-width:640px){
   .plant-head{padding:20px}
   .psec{padding:18px}
-  .map-toolbar .hint{display:none}
 }
 @media print{
   header.top nav,.toc,.pn,.map-toolbar{display:none}

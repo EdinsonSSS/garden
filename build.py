@@ -103,7 +103,6 @@ section{margin:44px 0}
 /* ---------- map ---------- */
 .map-card{padding:18px}
 .map-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.map-toolbar .hint{margin-left:auto;color:var(--muted);font-size:13.5px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink);transition:.15s}
 .chip:hover{border-color:var(--green)}
 .chip:focus-visible,.tree-link:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -201,7 +200,6 @@ footer .fin{display:flex;gap:30px;flex-wrap:wrap;margin-top:14px;opacity:.85}
 @media(max-width:640px){
   .plant-head{padding:20px}
   .psec{padding:18px}
-  .map-toolbar .hint{display:none}
 }
 @media print{
   header.top nav,.toc,.pn,.map-toolbar{display:none}
@@ -315,7 +313,7 @@ def footer():
 Информация собрана из профильных источников (sortoved.ru, vniispk.ru, sadsezon.com, КП-сад, supersadovnik.ru, питомники)
 и дополнена отзывами опытных садоводов с форумов (forum.prihoz.ru, plodpitomnik.ru, forum.tvoysad.ru, vsesorta.ru).
 <div class="fin"><span>🍎 9 яблонь</span><span>🍐 2 груши</span><span>🍒 5 вишен</span><span>🟣 6 слив</span><span>🫐 тёрн · 🌰 орешник · 🔴 боярышник · 🌳 дуб</span></div>
-<div class="fin"><span>Порядок деревьев в ряду 1 показан как «вишни слева, сливы справа» — если на участке иначе, скажите, поправим карту.</span></div>
+<div class="fin"><span>Порядок деревьев в ряду 1 показан как «вишни слева, сливы справа» — если на участке иначе, поправьте раскладку в MAP_ROWS (plants_data.py) и пересоберите сайт.</span></div>
 </div></footer>"""
 
 # ------------------------------------------------------------------ SVG map
@@ -362,28 +360,23 @@ def tip_attr(p, extra=""):
     """tip_html с двойным экранированием кавычек — значение атрибута data-tip."""
     return e(tip_html(p, extra)).replace('"', "&quot;")
 
+
+def join_dot(*parts):
+    """Соединяет непустые фрагменты через « · » (row_label может быть пустым)."""
+    return " · ".join(x for x in parts if x)
+
 def build_map():
     W, BAND_X0, BAND_X1 = 1080, 96, 1056
     parts = []
     # фон
-    parts.append(f'<rect width="{W}" height="790" fill="#eef2e0"/>')
-    # забор
-    parts.append('<rect x="10" y="16" width="1060" height="9" rx="4" fill="#a9825a"/><rect x="10" y="38" width="1060" height="9" rx="4" fill="#a9825a"/>')
-    for px in range(24, 1066, 86):
-        parts.append(f'<rect x="{px}" y="8" width="10" height="48" rx="3" fill="#8a6242"/>')
-    parts.append(f'<text x="{W/2:.0f}" y="62" text-anchor="middle" font-size="11" fill="#8a7358" letter-spacing="3">З А Б О Р</text>')
+    parts.append(f'<rect width="{W}" height="734" fill="#eef2e0"/>')
 
-    row_ys = [70, 240, 344, 448, 552, 656]
+    row_ys = [30, 200, 304, 408, 512, 616]
     row_hs = [160, 96, 96, 96, 96, 96]
-    row_subs = ["вдоль забора", "", "", "", "", ""]
 
     for ri, (rname, items) in enumerate(MAP_ROWS):
         y, h = row_ys[ri], row_hs[ri]
         parts.append(f'<rect class="rowband" x="{BAND_X0}" y="{y}" width="{BAND_X1-BAND_X0}" height="{h}" rx="14" fill="#e7eed6" stroke="#d3ddb8"/>')
-        num = rname.split(" ")[1]
-        parts.append(f'<text x="14" y="{y+h/2-6:.0f}" font-size="15" font-weight="800" fill="#4a7c3f">Ряд {e(num)}</text>')
-        if row_subs[ri]:
-            parts.append(f'<text x="14" y="{y+h/2+13:.0f}" font-size="10.5" fill="#8a9a7e">{e(row_subs[ri])}</text>')
 
         if ri == 0:
             # две компактные группы по 5, прижаты к левому краю
@@ -393,7 +386,7 @@ def build_map():
                 p = P[it["plant"]]
                 k = KINDS[it["color_key"]]
                 gx0 = BAND_X0 + 14 + gi * (gw + GGAP)
-                parts.append(f'<a class="tree-link" href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{it["color_key"]}" data-tip="{tip_attr(p, p["row_label"] + " · 5 деревьев · ")}">')
+                parts.append(f'<a class="tree-link" href="plants/{p["id"]}.html" aria-label="{e(p["name"])}"><g class="tree" data-kind="{it["color_key"]}" data-tip="{tip_attr(p, join_dot(p["row_label"], "5 деревьев") + " · ")}">')
                 parts.append(f'<rect x="{gx0:.0f}" y="{y+8}" width="{gw:.0f}" height="{h-46}" rx="12" fill="{k["color"]}" fill-opacity="0.07" stroke="{k["color"]}" stroke-opacity="0.3" stroke-dasharray="4 3"/>')
                 for ti in range(5):
                     cx = gx0 + GPAD + GSTEP * (ti + 0.5)
@@ -416,8 +409,8 @@ def build_map():
                     parts.append(f'<text x="{cx+26}" y="{cy-26}" font-size="10" fill="#8a9a7e" font-style="italic">({e(it["tag"])})</text>')
                 parts.append('</g></a>')
 
-    svg = (f'<svg viewBox="0 0 {W} 790" xmlns="http://www.w3.org/2000/svg" role="img" '
-           f'aria-label="Интерактивная карта сада: 6 рядов, 26 растений">' + "".join(parts) + '</svg>')
+    svg = (f'<svg viewBox="0 0 {W} 734" xmlns="http://www.w3.org/2000/svg" role="img" '
+           f'aria-label="Интерактивная карта сада: растения рядами, всего 26">' + "".join(parts) + '</svg>')
     return svg
 
 # ------------------------------------------------------------------ index
@@ -439,7 +432,7 @@ def build_index():
             badges = "".join(f'<span class="tag">{e(b)}</span>' for b in p["badges"][:3])
             short = p["tagline"][:120] + ("…" if len(p["tagline"]) > 120 else "")
             cards += f"""<a class="pcard" style="border-left-color:{KINDS[k]['color']}" href="plants/{p['id']}.html">
-<div class="ttl"><span class="em">{p['emoji']}</span><span><b>{e(p['name'])}</b><br><small>{e(p['row_label'])}</small></span></div>
+<div class="ttl"><span class="em">{p['emoji']}</span><span><b>{e(p['name'])}</b>{f'<br><small>{e(p["row_label"])}</small>' if p['row_label'] else ''}</span></div>
 <div class="tags">{badges}</div><p>{e(short)}</p><span class="more">Открыть карточку →</span></a>"""
         total = sum(p["count"] for p in plist)
         word = {1: "растение"}.get(total, "растения" if 2 <= total <= 4 else "растений")
@@ -449,11 +442,10 @@ def build_index():
 <div class="wrap">
 <div class="hero">
 <h1>Мой сад: 26 деревьев и кустарников</h1>
-<p class="lead">Интерактивная карта участка с растениями, посаженными в шесть рядов. Кликните дерево на карте —
+<p class="lead">Интерактивная карта участка с растениями, посаженными рядами. Кликните дерево на карте —
 откроется его персональная карточка: характеристики, посадка, уход, обрезка, защита и тонкости от опытных садоводов.</p>
 <div class="stats">
 <div class="stat"><b>{n_trees}</b><span>растений в саду</span></div>
-<div class="stat"><b>6</b><span>рядов посадки</span></div>
 <div class="stat"><b>{len(PLANTS)}</b><span>карточек растений</span></div>
 <div class="stat"><b>9</b><span>сортов яблони</span></div>
 <div class="stat"><b>2</b><span>сорта груши</span></div>
@@ -466,7 +458,6 @@ def build_index():
 <div class="map-toolbar">
 <button class="chip on" type="button" aria-pressed="true" data-kind="">Все растения</button>
 {chips}
-<span class="hint">Ряд 1 — вдоль забора</span>
 </div>
 <div class="map-wrap">
 {build_map()}
@@ -476,7 +467,7 @@ def build_index():
 </section>
 
 <section id="catalog">
-<div class="sec-head"><h2>📇 Каталог растений</h2><span>карточки по видам — от вишен у забора до дуба и «загадочной» яблони</span></div>
+<div class="sec-head"><h2>📇 Каталог растений</h2><span>карточки по видам — от вишен первой линии до дуба и «загадочной» яблони</span></div>
 {''.join(groups)}
 </section>
 
@@ -570,12 +561,12 @@ def build_plant(p, idx):
 
     body = f"""{header(root="../")}
 <div class="wrap">
-<div class="crumbs"><a href="../index.html">🌳 Мой сад</a> → <a href="../index.html#map">Карта</a> → {e(p['row_label'])} → <b>{e(p['name'])}</b></div>
+<div class="crumbs"><a href="../index.html">🌳 Мой сад</a> → <a href="../index.html#map">Карта</a> → {f"{e(p['row_label'])} → " if p['row_label'] else ''}<b>{e(p['name'])}</b></div>
 <div class="plant-head">
 <div class="big-em" style="background:{k['color']}1f;border:2px solid {k['color']}66">{p['emoji']}</div>
 <div>
 <h1>{e(p['name'])}</h1>
-<div class="sp">{e(p['species'])} · {e(p['row_label'])} · {p['count']} {'шт.' if p['count']>1 else 'дерево'}</div>
+<div class="sp">{e(join_dot(p['species'], p['row_label'], f"{p['count']} {'шт.' if p['count']>1 else 'дерево'}"))}</div>
 <div class="badges">{badges}</div>
 <p class="tagline">{e(p['tagline'])}</p>
 </div></div>
@@ -605,7 +596,7 @@ def build_plant(p, idx):
 <div class="psec tips" id="tips"><h2><span class="ic">💡</span>Тонкости от опытных садоводов</h2><ul class="tips">{tips}</ul>
 <p style="font-size:12.5px;color:var(--muted);margin-top:10px">Советы собраны из отзывов садоводов на форумах и из практики питомников; цитаты приведены по источникам ниже.</p></div>
 
-<div class="psec" id="garden"><h2><span class="ic">📍</span>В вашем саду</h2><div class="note-box"><b>{e(p['name'])} — {e(p['row_label'])}.</b> {e(p['garden_note'])}<br>
+<div class="psec" id="garden"><h2><span class="ic">📍</span>В вашем саду</h2><div class="note-box">{f"<b>{e(p['name'])} — {e(p['row_label'])}.</b> " if p['row_label'] else f"<b>{e(p['name'])}.</b> "}{e(p['garden_note'])}<br>
 <a href="../index.html#map">← Найти на карте сада</a></div></div>
 
 <div class="psec sources" id="sources"><h2><span class="ic">🔗</span>Источники</h2><ol>{sources}</ol></div>
